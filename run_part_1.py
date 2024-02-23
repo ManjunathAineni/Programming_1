@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
     # X and Y are Mnist datasets
     answer1A = part_A(part1)
-    answer1B = part_B(part1)
+    answer1B, X, y , Xtest, ytest = part_B(part1) 
     answer1C = part_C(part1, X, y)
     answer1D = part_D(part1, X, y)
     answer1E = part_E(part1, X, y)
