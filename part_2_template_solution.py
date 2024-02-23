@@ -5,6 +5,20 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import Any
 
+from sklearn.model_selection import ShuffleSplit
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import (
+    ShuffleSplit,
+    cross_validate,
+    KFold,
+)
+
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+
+import utils as u
+import new_utils as nu
 # ======================================================================
 
 # I could make Section 2 a subclass of Section 1, which would facilitate code reuse.
@@ -52,6 +66,24 @@ class Section2:
         NDArray[np.int32],
     ]:
         answer = {}
+        
+        
+        Xtrain, ytrain, Xtest, ytest = u.prepare_data()
+        Xtrain = nu.scale_data(Xtrain)
+        Xtest = nu.scale_data(Xtest)
+        
+        answer = {}
+        answer["nb_classes_train"] = len(np.unique(ytrain))
+        answer["nb_classes_test"] = len(np.unique(ytest))
+        answer["class_count_train"] = np.bincount(ytrain)
+        answer["class_count_test"] = np.bincount(ytest)
+        answer["length_Xtrain"] = Xtrain.shape[0]
+        answer["length_Xtest"] = Xtest.shape[0]
+        answer["length_ytrain"] = len(ytrain)
+        answer["length_ytest"] = len(ytest)
+        answer["max_Xtrain"] = np.max(Xtrain)
+        answer["max_Xtest"] = np.max(Xtest)
+        
         # Enter your code and fill the `answer`` dictionary
 
         # `answer` is a dictionary with the following keys:
@@ -69,8 +101,8 @@ class Section2:
         # return values:
         # Xtrain, ytrain, Xtest, ytest: the data used to fill the `answer`` dictionary
 
-        Xtrain = Xtest = np.zeros([1, 1], dtype="float")
-        ytrain = ytest = np.zeros([1], dtype="int")
+        #Xtrain = Xtest = np.zeros([1, 1], dtype="float")
+        #ytrain = ytest = np.zeros([1], dtype="int")
 
         return answer, Xtrain, ytrain, Xtest, ytest
 
@@ -102,6 +134,91 @@ class Section2:
         """ """
         # Enter your code and fill the `answer`` dictionary
         answer = {}
+        
+        for i in range(0, len(ntrain_list)):
+            train_rows = ntrain_list[i]
+            test_rows = ntest_list[i]
+    
+            Xtrain = X[0:train_rows,:]
+            ytrain = y[0:train_rows]
+            Xtest = Xtest[0:test_rows]
+            ytest = ytest[0:test_rows]
+            
+    
+            answer1= {}
+            
+            clf = DecisionTreeClassifier(random_state=self.seed)
+            cv = KFold(n_splits=5,shuffle = True,random_state=self.seed)
+            dec_tree = u.train_simple_classifier_with_cv(Xtrain=X,ytrain=y,clf=clf,cv=cv) 
+    
+            answer_sub ={}
+            res_key ={}
+            res_key['mean_fit_time'] = dec_tree['fit_time'].mean()
+            res_key['std_fit_time'] = dec_tree['fit_time'].std()
+            res_key['mean_accuracy'] = dec_tree['test_score'].mean()
+            res_key['std_accuracy'] = dec_tree['test_score'].std()
+        
+            answer_sub["scores"] = res_key
+            answer_sub["clf"] = clf  
+            answer_sub["cv"] = cv 
+    
+            
+    
+        
+    
+            answer_sub1 ={}
+            clf = DecisionTreeClassifier(random_state=self.seed)
+            cv_ss = ShuffleSplit(n_splits=5,random_state=self.seed)
+    
+            dec_tree_ss = u.train_simple_classifier_with_cv(Xtrain=X,ytrain=y,clf=clf,cv=cv_ss)
+            res_key_ss ={}
+            res_key_ss['mean_fit_time'] = dec_tree_ss['fit_time'].mean()
+            res_key_ss['std_fit_time'] = dec_tree_ss['fit_time'].std()
+            res_key_ss['mean_accuracy'] = dec_tree_ss['test_score'].mean()
+            res_key_ss['std_accuracy'] = dec_tree_ss['test_score'].std()
+    
+            answer_sub1["scores"] = res_key_ss
+            answer_sub1["clf"] = clf
+            answer_sub1["cv"] = cv_ss
+    
+            
+    
+    
+    
+            answer_sub2 ={}
+            clf = LogisticRegression(max_iter=300,random_state=self.seed)
+            cv_ss = ShuffleSplit(n_splits=5,random_state=self.seed)
+            ran_tree_ss = u.train_simple_classifier_with_cv(Xtrain=X,ytrain=y,clf=clf,cv=cv_ss)
+            clf.fit(Xtrain,ytrain)
+            train_pred =clf.predict(Xtrain)
+            test_pred = clf.predict(Xtest)
+            scores_train_F = accuracy_score(ytrain,train_pred)
+            scores_test_F =  accuracy_score(ytest,test_pred)
+
+            conf_mat_train = confusion_matrix(ytrain,train_pred)
+            conf_mat_test = confusion_matrix(ytest,test_pred)
+
+            mean_cv_accuracy_F = ran_tree_ss["test_score"].mean()
+            answer_sub2 = {
+                "scores_train_F": scores_train_F,
+                "scores_test_F": scores_test_F,
+                "mean_cv_accuracy_F": mean_cv_accuracy_F,
+                "clf": clf,
+                "cv": cv_ss,
+                "conf_mat_train": conf_mat_train,
+                "conf_mat_test": conf_mat_test
+            }
+           
+            
+            answer[ntrain_list[i]] = {
+                "partC": answer_sub ,
+                "partD": answer_sub1,
+                "partF": answer_sub2,
+                "ntrain": train_rows,
+                "ntest": test_rows,
+                "class_count_train": list(np.bincount(ytrain)) ,
+                "class_count_test": list(np.bincount(ytest))
+            }
 
         """
         `answer` is a dictionary with the following keys:

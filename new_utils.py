@@ -10,3 +10,10 @@
   
      import new_utils as nu
 """
+
+
+def scale_data(X):
+    
+    scaled_X = (X - X.min()) / (X.max() - X.min())
+    
+    return scaled_X
