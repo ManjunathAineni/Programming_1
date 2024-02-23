@@ -300,49 +300,50 @@ class Section3:
         answer = {}
         
 
+        # Compute class weights
         class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y), y=y)
-        
 
+        # Define the classifier with weighted loss function
         SV_clf_weighted = SVC(random_state=self.seed, class_weight={0: class_weights[0], 1: class_weights[1]})
-        
 
+        # Define the cross-validation strategy
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=self.seed)
-        
 
+        # Define scoring metrics
         scoring = {
             'f1': make_scorer(f1_score, average='macro'),
             'precision': make_scorer(precision_score, average='macro'),
             'recall': make_scorer(recall_score, average='macro'),
             'accuracy': 'accuracy'
         }
-        
-     
-        evaluation_scores_weighted = {metric: cross_val_score(SV_clf_weighted, X, y, scoring=scoring[metric], cv=cv)
-                                      for metric in scoring}
-        
 
-        evaluation_scores_weighted = {}
-        evaluation_scores_weighted['mean_accuracy'] = np.mean(scores_cv_weighted['accuracy'])
-        evaluation_scores_weighted['mean_recall'] = np.mean(scores_cv_weighted['recall'])
-        evaluation_scores_weighted['mean_precision'] = np.mean(scores_cv_weighted['precision'])
-        evaluation_scores_weighted['mean_f1'] = np.mean(scores_cv_weighted['f1'])
-        evaluation_scores_weighted['std_accuracy'] = np.std(scores_cv_weighted['accuracy'])
-        evaluation_scores_weighted['std_recall'] = np.std(scores_cv_weighted['recall'])
-        evaluation_scores_weighted['std_precision'] = np.std(scores_cv_weighted['precision'])
-        evaluation_scores_weighted['std_f1'] = np.std(scores_cv_weighted['f1'])
-        
-    
+        # Perform cross-validation
+        scores_cv_weighted = {metric: cross_val_score(SV_clf_weighted, X, y, scoring=scoring[metric], cv=cv)
+                              for metric in scoring}
+
+        # Calculate mean and standard deviation of scores
+        scores_weighted = {}
+        scores_weighted['mean_accuracy'] = np.mean(scores_cv_weighted['accuracy'])
+        scores_weighted['mean_recall'] = np.mean(scores_cv_weighted['recall'])
+        scores_weighted['mean_precision'] = np.mean(scores_cv_weighted['precision'])
+        scores_weighted['mean_f1'] = np.mean(scores_cv_weighted['f1'])
+        scores_weighted['std_accuracy'] = np.std(scores_cv_weighted['accuracy'])
+        scores_weighted['std_recall'] = np.std(scores_cv_weighted['recall'])
+        scores_weighted['std_precision'] = np.std(scores_cv_weighted['precision'])
+        scores_weighted['std_f1'] = np.std(scores_cv_weighted['f1'])
+
+        # Fit the classifier on the entire training data
         SV_clf_weighted.fit(X, y)
-        
 
+        # Predict on training and testing data
         y_pred_train_weighted = SV_clf_weighted.predict(X)
         y_pred_test_weighted = SV_clf_weighted.predict(Xtest)
-        
-   
+
+        # Generate confusion matrices
         confusion_matrix_train_weighted = confusion_matrix(y, y_pred_train_weighted)
         confusion_matrix_test_weighted = confusion_matrix(ytest, y_pred_test_weighted)
-        
-        answer["evaluation_scores_weighted"] = evaluation_scores_weighted
+
+        answer["scores"] = scores_weighted
         answer['cv'] = cv
         answer['clf'] = SV_clf_weighted
         answer['class_weights'] = class_weights
