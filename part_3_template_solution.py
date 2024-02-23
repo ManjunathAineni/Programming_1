@@ -76,10 +76,9 @@ class Section3:
     ]:
         """ """
         # Enter code and return the `answer`` dictionary
-
-        answer = {}
         
         answer = {}
+        
         clf=LogisticRegression(random_state=self.seed,max_iter=300)
         cv=ShuffleSplit(n_splits=5,random_state=self.seed)
 
