@@ -158,7 +158,7 @@ class Section2:
             res_key['mean_accuracy'] = dec_tree['test_score'].mean()
             res_key['std_accuracy'] = dec_tree['test_score'].std()
         
-            answer_sub["scores"] = res_key
+            answer_sub["scores_C"] = res_key
             answer_sub["clf"] = clf  
             answer_sub["cv"] = cv 
     
@@ -177,7 +177,7 @@ class Section2:
             res_key_ss['mean_accuracy'] = dec_tree_ss['test_score'].mean()
             res_key_ss['std_accuracy'] = dec_tree_ss['test_score'].std()
     
-            answer_sub1["scores"] = res_key_ss
+            answer_sub1["scores_D"] = res_key_ss
             answer_sub1["clf"] = clf
             answer_sub1["cv"] = cv_ss
     
