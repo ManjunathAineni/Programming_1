@@ -144,12 +144,12 @@ class Section2:
             Xtest = Xtest[0:test_rows]
             ytest = ytest[0:test_rows]
             
-    
+            
             answer1= {}
             
             clf = DecisionTreeClassifier(random_state=self.seed)
             cv = KFold(n_splits=5,shuffle = True,random_state=self.seed)
-            dec_tree = u.train_simple_classifier_with_cv(Xtrain=X,ytrain=y,clf=clf,cv=cv) 
+            dec_tree = u.train_simple_classifier_with_cv(Xtrain=Xtrain,ytrain=ytrain,clf=clf,cv=cv) 
     
             answer_sub ={}
             res_key ={}
@@ -170,7 +170,7 @@ class Section2:
             clf = DecisionTreeClassifier(random_state=self.seed)
             cv_ss = ShuffleSplit(n_splits=5,random_state=self.seed)
     
-            dec_tree_ss = u.train_simple_classifier_with_cv(Xtrain=X,ytrain=y,clf=clf,cv=cv_ss)
+            dec_tree_ss = u.train_simple_classifier_with_cv(Xtrain=Xtrain,ytrain=ytrain,clf=clf,cv=cv_ss)
             res_key_ss ={}
             res_key_ss['mean_fit_time'] = dec_tree_ss['fit_time'].mean()
             res_key_ss['std_fit_time'] = dec_tree_ss['fit_time'].std()
@@ -188,17 +188,23 @@ class Section2:
             answer_sub2 ={}
             clf = LogisticRegression(max_iter=300,random_state=self.seed)
             cv_ss = ShuffleSplit(n_splits=5,random_state=self.seed)
-            ran_tree_ss = u.train_simple_classifier_with_cv(Xtrain=X,ytrain=y,clf=clf,cv=cv_ss)
+            ran_tree_ss = cross_validate(clf, Xtrain, ytrain, cv=cv_ss, return_train_score=True)
             clf.fit(Xtrain,ytrain)
+            
             train_pred =clf.predict(Xtrain)
             test_pred = clf.predict(Xtest)
-            scores_train_F = accuracy_score(ytrain,train_pred)
-            scores_test_F =  accuracy_score(ytest,test_pred)
+            
+            #scores_train_F = accuracy_score(ytrain,train_pred)
+            #scores_test_F =  accuracy_score(ytest,test_pred)
+
+            scores_train_F = clf.score(Xtrain, ytrain)
+            scores_test_F = clf.score(Xtest, ytest)
 
             conf_mat_train = confusion_matrix(ytrain,train_pred)
             conf_mat_test = confusion_matrix(ytest,test_pred)
 
             mean_cv_accuracy_F = ran_tree_ss["test_score"].mean()
+            
             answer_sub2 = {
                 "scores_train_F": scores_train_F,
                 "scores_test_F": scores_test_F,
